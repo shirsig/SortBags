@@ -1,6 +1,5 @@
--- Usage: Clean_Up(containers, [reverse])
--- Containers for bags: {0, 1, 2, 3, 4}
--- Containers for bank: {-1, 5, 6, 7, 8, 9, 10}
+-- Repository: https://github.com/shirsig/Clean_Up-lib
+-- Usage: Clean_Up('bags'|'bank', [reverse])
 
 if Clean_Up then return end
 local _G, _M = getfenv(0), {}
@@ -105,7 +104,13 @@ do
 	f:Hide()
 
 	function _G.Clean_Up(containers, reverse)
-		CONTAINERS = containers
+		if containers == 'bags' then
+			CONTAINERS = {0, 1, 2, 3, 4}
+		elseif containers == 'bank' then
+			CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
+		else
+			error()
+		end
 		REVERSE = reverse
 		Initialize()
 		f:Show()
