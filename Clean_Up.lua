@@ -1,5 +1,5 @@
 -- Repository: https://github.com/shirsig/Clean_Up-lib
--- Usage: Clean_Up('bags'|'bank', [reverse])
+-- Usage: Clean_Up('bags'|'bank' [, reverse])
 
 if Clean_Up then return end
 local _G, _M = getfenv(0), {}
