@@ -104,6 +104,7 @@ do
 	f:Hide()
 
 	function _G.Clean_Up(containers, reverse)
+		if f:IsShown() then return end
 		if containers == 'bags' then
 			CONTAINERS = {0, 1, 2, 3, 4}
 		elseif containers == 'bank' then
