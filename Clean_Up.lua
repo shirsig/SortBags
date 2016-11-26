@@ -105,6 +105,8 @@ do
 	local f = CreateFrame'Frame'
 	f:Hide()
 
+	local timeout
+
 	function _G.Clean_Up(containers, reverse)
 		if f:IsShown() then return end
 		if containers == 'bags' then
@@ -116,6 +118,7 @@ do
 		end
 		REVERSE = reverse
 		Initialize()
+		timeout = GetTime() + 7
 		f:Show()
 	end
 
@@ -126,7 +129,7 @@ do
 			delay = .2
 
 			local complete = Sort()
-			if complete then
+			if complete or GetTime() > timeout then
 				f:Hide()
 				return
 			end
