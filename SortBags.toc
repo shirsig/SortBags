@@ -2,4 +2,5 @@
 ## Title: SortBags
 ## Notes: Sorts and stacks your items
 ## Author: shirsig
+## SavedVariablesPerCharacter: SortBagsRightToLeft
 SortBags.lua

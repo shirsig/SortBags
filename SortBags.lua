@@ -2,16 +2,16 @@ if SortBags then return end
 local _G, _M = getfenv(0), {}
 setfenv(1, setmetatable(_M, {__index=_G}))
 
-CreateFrame('GameTooltip', 'Clean_Up_Tooltip', nil, 'GameTooltipTemplate')
+CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
-local RIGHT_TO_LEFT, CONTAINERS
+local CONTAINERS
 
 function _G.GetSortBagsRightToLeft(enabled)
-	return RIGHT_TO_LEFT
+	return SortBagsRightToLeft
 end
 
 function _G.SetSortBagsRightToLeft(enabled)
-	RIGHT_TO_LEFT = enabled and 1 or nil
+	SortBagsRightToLeft = enabled and 1 or nil
 end
 
 function _G.SortBankBags()
@@ -209,18 +209,18 @@ end
 function TooltipInfo(container, position)
 	local chargesPattern = '^' .. gsub(gsub(ITEM_SPELL_CHARGES_P1, '%%d', '(%%d+)'), '%%%d+%$d', '(%%d+)') .. '$'
 
-	Clean_Up_Tooltip:SetOwner(UIParent, 'ANCHOR_NONE')
-	Clean_Up_Tooltip:ClearLines()
+	SortBagsTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+	SortBagsTooltip:ClearLines()
 
 	if container == BANK_CONTAINER then
-		Clean_Up_Tooltip:SetInventoryItem('player', BankButtonIDToInvSlotID(position))
+		SortBagsTooltip:SetInventoryItem('player', BankButtonIDToInvSlotID(position))
 	else
-		Clean_Up_Tooltip:SetBagItem(container, position)
+		SortBagsTooltip:SetBagItem(container, position)
 	end
 
 	local charges, usable, soulbound, quest, conjured
-	for i = 1, Clean_Up_Tooltip:NumLines() do
-		local text = getglobal('Clean_Up_TooltipTextLeft' .. i):GetText()
+	for i = 1, SortBagsTooltip:NumLines() do
+		local text = getglobal('SortBagsTooltipTextLeft' .. i):GetText()
 
 		local _, _, chargeString = strfind(text, chargesPattern)
 		if chargeString then
@@ -288,7 +288,7 @@ do
 	local counts
 
 	local function insert(t, v)
-		if RIGHT_TO_LEFT then
+		if SortBagsRightToLeft then
 			tinsert(t, v)
 		else
 			tinsert(t, 1, v)
@@ -298,7 +298,7 @@ do
 	local function assign(slot, item)
 		if counts[item] > 0 then
 			local count
-			if RIGHT_TO_LEFT and mod(counts[item], itemStacks[item]) ~= 0 then
+			if SortBagsRightToLeft and mod(counts[item], itemStacks[item]) ~= 0 then
 				count = mod(counts[item], itemStacks[item])
 			else
 				count = min(counts[item], itemStacks[item])
@@ -460,7 +460,7 @@ function Item(container, position)
 		tinsert(sortKey, ItemSubTypeKey(type, subType))
 		tinsert(sortKey, -quality)
 		tinsert(sortKey, itemID)
-		tinsert(sortKey, (RIGHT_TO_LEFT and 1 or -1) * charges)
+		tinsert(sortKey, (SortBagsRightToLeft and 1 or -1) * charges)
 		tinsert(sortKey, suffixID)
 		tinsert(sortKey, enchantID)
 		tinsert(sortKey, uniqueID)
