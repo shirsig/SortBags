@@ -1,0 +1,5 @@
+## Interface: 11200
+## Title: SortBags
+## Notes: Sorts and stacks your items
+## Author: shirsig
+SortBags.lua

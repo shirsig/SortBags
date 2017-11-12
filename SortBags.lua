@@ -1,13 +1,28 @@
--- Repository: https://github.com/shirsig/Clean_Up-lib
--- Usage: Clean_Up(containers [, reverse])
---   containers - 'bags' or 'bank'
---   reverse - boolean
-
-if Clean_Up then return end
+if SortBags then return end
 local _G, _M = getfenv(0), {}
 setfenv(1, setmetatable(_M, {__index=_G}))
 
 CreateFrame('GameTooltip', 'Clean_Up_Tooltip', nil, 'GameTooltipTemplate')
+
+local RIGHT_TO_LEFT, CONTAINERS
+
+function _G.GetSortBagsRightToLeft(enabled)
+	return RIGHT_TO_LEFT
+end
+
+function _G.SetSortBagsRightToLeft(enabled)
+	RIGHT_TO_LEFT = enabled and 1 or nil
+end
+
+function _G.SortBankBags()
+	CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
+	Start()
+end
+
+function _G.SortBags(containers)
+	CONTAINERS = {0, 1, 2, 3, 4}
+	Start()
+end
 
 local function set(...)
 	local t = {}
@@ -107,16 +122,8 @@ do
 
 	local timeout
 
-	function _G.Clean_Up(containers, reverse)
+	function Start()
 		if f:IsShown() then return end
-		if containers == 'bags' then
-			CONTAINERS = {0, 1, 2, 3, 4}
-		elseif containers == 'bank' then
-			CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
-		else
-			error()
-		end
-		REVERSE = reverse
 		Initialize()
 		timeout = GetTime() + 7
 		f:Show()
@@ -281,7 +288,7 @@ do
 	local counts
 
 	local function insert(t, v)
-		if REVERSE then
+		if RIGHT_TO_LEFT then
 			tinsert(t, v)
 		else
 			tinsert(t, 1, v)
@@ -291,7 +298,7 @@ do
 	local function assign(slot, item)
 		if counts[item] > 0 then
 			local count
-			if REVERSE and mod(counts[item], itemStacks[item]) ~= 0 then
+			if RIGHT_TO_LEFT and mod(counts[item], itemStacks[item]) ~= 0 then
 				count = mod(counts[item], itemStacks[item])
 			else
 				count = min(counts[item], itemStacks[item])
@@ -453,7 +460,7 @@ function Item(container, position)
 		tinsert(sortKey, ItemSubTypeKey(type, subType))
 		tinsert(sortKey, -quality)
 		tinsert(sortKey, itemID)
-		tinsert(sortKey, (REVERSE and 1 or -1) * charges)
+		tinsert(sortKey, (RIGHT_TO_LEFT and 1 or -1) * charges)
 		tinsert(sortKey, suffixID)
 		tinsert(sortKey, enchantID)
 		tinsert(sortKey, uniqueID)
