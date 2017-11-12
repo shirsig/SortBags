@@ -1,6 +1,6 @@
 ## Interface: 11200
-## Title: SortBags
+## Title: Cleanup
 ## Notes: Sorts and stacks your items
 ## Author: shirsig
 ## SavedVariablesPerCharacter: SortBagsRightToLeft
-SortBags.lua
+Cleanup.lua
