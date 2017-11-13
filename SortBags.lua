@@ -1,7 +1,7 @@
 local _G, _M = getfenv(0), {}
 setfenv(1, setmetatable(_M, {__index=_G}))
 
-CreateFrame('GameTooltip', 'CleanupTooltip', nil, 'GameTooltipTemplate')
+CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
 local CONTAINERS
 
@@ -208,18 +208,18 @@ end
 function TooltipInfo(container, position)
 	local chargesPattern = '^' .. gsub(gsub(ITEM_SPELL_CHARGES_P1, '%%d', '(%%d+)'), '%%%d+%$d', '(%%d+)') .. '$'
 
-	CleanupTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
-	CleanupTooltip:ClearLines()
+	SortBagsTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+	SortBagsTooltip:ClearLines()
 
 	if container == BANK_CONTAINER then
-		CleanupTooltip:SetInventoryItem('player', BankButtonIDToInvSlotID(position))
+		SortBagsTooltip:SetInventoryItem('player', BankButtonIDToInvSlotID(position))
 	else
-		CleanupTooltip:SetBagItem(container, position)
+		SortBagsTooltip:SetBagItem(container, position)
 	end
 
 	local charges, usable, soulbound, quest, conjured
-	for i = 1, CleanupTooltip:NumLines() do
-		local text = getglobal('CleanupTooltipTextLeft' .. i):GetText()
+	for i = 1, SortBagsTooltip:NumLines() do
+		local text = getglobal('SortBagsTooltipTextLeft' .. i):GetText()
 
 		local _, _, chargeString = strfind(text, chargesPattern)
 		if chargeString then
