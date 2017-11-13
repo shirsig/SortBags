@@ -5,12 +5,9 @@ CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
 local CONTAINERS
 
-function _G.GetSortBagsRightToLeft(enabled)
-	return SortBagsRightToLeft
-end
-
-function _G.SetSortBagsRightToLeft(enabled)
-	SortBagsRightToLeft = enabled and 1 or nil
+function _G.SortBags(containers)
+	CONTAINERS = {0, 1, 2, 3, 4}
+	Start()
 end
 
 function _G.SortBankBags()
@@ -18,9 +15,12 @@ function _G.SortBankBags()
 	Start()
 end
 
-function _G.SortBags(containers)
-	CONTAINERS = {0, 1, 2, 3, 4}
-	Start()
+function _G.GetSortBagsRightToLeft(enabled)
+	return SortBagsRightToLeft
+end
+
+function _G.SetSortBagsRightToLeft(enabled)
+	SortBagsRightToLeft = enabled and 1 or nil
 end
 
 local function set(...)
@@ -43,7 +43,7 @@ end
 
 local ITEM_TYPES = {GetAuctionItemClasses()}
 
-local MOUNT = set(
+local MOUNTS = set(
 	-- rams
 	5864, 5872, 5873, 18785, 18786, 18787, 18244, 19030, 13328, 13329,
 	-- horses
@@ -66,11 +66,11 @@ local MOUNT = set(
 
 local SPECIAL = set(5462, 17696, 17117, 13347, 13289, 11511)
 
-local KEY = set(9240, 17191, 13544, 12324, 16309, 12384, 20402)
+local KEYS = set(9240, 17191, 13544, 12324, 16309, 12384, 20402)
 
-local TOOL = set(7005, 12709, 19727, 5956, 2901, 6219, 10498, 6218, 6339, 11130, 11145, 16207, 9149, 15846, 6256, 6365, 6367)
+local TOOLS = set(7005, 12709, 19727, 5956, 2901, 6219, 10498, 6218, 6339, 11130, 11145, 16207, 9149, 15846, 6256, 6365, 6367)
 
-local ENCHANTING_REAGENT = set(
+local ENCHANTING_MATERIALS = set(
 	-- dust
 	10940, 11083, 11137, 11176, 16204,
 	-- essence
@@ -80,6 +80,8 @@ local ENCHANTING_REAGENT = set(
 	-- crystal
 	20725
 )
+
+local HERBS = set(765, 785, 2447, 2449, 2450, 2452, 2453, 3355, 3356, 3357, 3358, 3369, 3818, 3819, 3820, 3821, 4625, 8831, 8836, 8838, 8839, 8845, 8846, 13463, 13464, 13465, 13466, 13467, 13468)
 
 local CLASSES = {
 	-- arrow
@@ -101,7 +103,7 @@ local CLASSES = {
 	{
 		containers = {22246, 22248, 22249},
 		items = union(
-			ENCHANTING_REAGENT,
+			ENCHANTING_MATERIALS,
 			-- rods
 			set(6218, 6339, 11130, 11145, 16207)
 		),
@@ -109,7 +111,7 @@ local CLASSES = {
 	-- herb
 	{
 		containers = {22250, 22251, 22252},
-		items = set(765, 785, 2447, 2449, 2450, 2452, 2453, 3355, 3356, 3357, 3358, 3369, 3818, 3819, 3820, 3821, 4625, 8831, 8836, 8838, 8839, 8845, 8846, 13463, 13464, 13465, 13466, 13467, 13468),
+		items = HERBS,
 	},
 }
 
@@ -398,7 +400,7 @@ function Item(container, position)
 			tinsert(sortKey, 1)
 
 		-- mounts
-		elseif MOUNT[itemID] then
+		elseif MOUNTS[itemID] then
 			tinsert(sortKey, 2)
 
 		-- special items
@@ -406,11 +408,11 @@ function Item(container, position)
 			tinsert(sortKey, 3)
 
 		-- key items
-		elseif KEY[itemID] then
+		elseif KEYS[itemID] then
 			tinsert(sortKey, 4)
 
 		-- tools
-		elseif TOOL[itemID] then
+		elseif TOOLS[itemID] then
 			tinsert(sortKey, 5)
 
 		-- soul shards
@@ -425,33 +427,37 @@ function Item(container, position)
 		elseif soulbound then
 			tinsert(sortKey, 6)
 
-		-- enchanting reagents
-		elseif ENCHANTING_REAGENT[itemID] then
-			tinsert(sortKey, 7)
-
-		-- other reagents
+		-- reagents
 		elseif type == ITEM_TYPES[9] then
-			tinsert(sortKey, 8)
+			tinsert(sortKey, 7)
 
 		-- quest items
 		elseif quest then
-			tinsert(sortKey, 10)
+			tinsert(sortKey, 9)
 
 		-- consumables
 		elseif usable and type ~= ITEM_TYPES[1] and type ~= ITEM_TYPES[2] and type ~= ITEM_TYPES[8] or type == ITEM_TYPES[4] then
-			tinsert(sortKey, 9)
+			tinsert(sortKey, 8)
+
+		-- enchanting materials
+		elseif ENCHANTING_MATERIALS[itemID] then
+			tinsert(sortKey, 11)
+
+		-- herbs
+		elseif HERBS[itemID] then
+			tinsert(sortKey, 12)
 
 		-- higher quality
 		elseif quality > 1 then
-			tinsert(sortKey, 11)
+			tinsert(sortKey, 10)
 
 		-- common quality
 		elseif quality == 1 then
-			tinsert(sortKey, 12)
+			tinsert(sortKey, 13)
 
 		-- junk
 		elseif quality == 0 then
-			tinsert(sortKey, 13)
+			tinsert(sortKey, 14)
 		end
 		
 		tinsert(sortKey, ItemTypeKey(type))
