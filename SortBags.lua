@@ -5,7 +5,7 @@ CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
 local CONTAINERS
 
-function _G.SortBags(containers)
+function _G.SortBags()
 	CONTAINERS = {0, 1, 2, 3, 4}
 	Start()
 end
@@ -25,6 +25,7 @@ end
 
 local function set(...)
 	local t = {}
+	local arg = { n = select("#", ...), ... }
 	for i = 1, arg.n do
 		t[arg[i]] = true
 	end
@@ -33,15 +34,20 @@ end
 
 local function union(...)
 	local t = {}
+	local arg = { n = select("#", ...), ... }
 	for i = 1, arg.n do
-		for k in arg[i] do
+		for k in pairs(arg[i]) do
 			t[k] = true
 		end
 	end
 	return t
 end
 
-local ITEM_TYPES = {GetAuctionItemClasses()}
+-- local ITEM_TYPES = {GetAuctionItemClasses()}
+local ITEM_TYPES = {}
+for i = 1, 15 do
+	tinsert(ITEM_TYPES, GetItemClassInfo(i))
+end
 
 local MOUNTS = set(
 	-- rams
@@ -133,7 +139,7 @@ do
 	end
 
 	local delay = 0
-	f:SetScript('OnUpdate', function()
+	f:SetScript('OnUpdate', function(_, arg1)
 		delay = delay - arg1
 		if delay <= 0 then
 			delay = .2
@@ -149,8 +155,8 @@ do
 end
 
 do
-	local function key(table, value)
-		for k, v in table do
+	local function key(t, value)
+		for k, v in pairs(t) do
 			if v == value then
 				return k
 			end
@@ -165,9 +171,9 @@ do
 		return key({GetAuctionItemSubClasses(ItemTypeKey(itemClass))}, itemClass) or 0
 	end
 
-	function ItemInvTypeKey(itemClass, itemSubClass, itemSlot)
-		return key({GetAuctionInvTypes(ItemTypeKey(itemClass), ItemSubTypeKey(itemSubClass))}, itemSlot) or 0
-	end
+	-- function ItemInvTypeKey(itemClass, itemSubClass, itemSlot) TODO retail
+	-- 	return key({GetAuctionInvTypes(ItemTypeKey(itemClass), ItemSubTypeKey(itemSubClass))}, itemSlot) or 0
+	-- end
 end
 
 function LT(a, b)
@@ -210,7 +216,8 @@ function Move(src, dst)
 end
 
 function TooltipInfo(container, position)
-	local chargesPattern = '^' .. gsub(gsub(ITEM_SPELL_CHARGES_P1, '%%d', '(%%d+)'), '%%%d+%$d', '(%%d+)') .. '$'
+	-- local chargesPattern = '^' .. gsub(gsub(ITEM_SPELL_CHARGES_P1, '%%d', '(%%d+)'), '%%%d+%$d', '(%%d+)') .. '$' TODO retail
+	local chargesPattern = '^' .. gsub(gsub(ITEM_SPELL_CHARGES, '%%d', '(%%d+)'), '%%%d+%$d', '(%%d+)') .. '$'
 
 	SortBagsTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
 	SortBagsTooltip:ClearLines()
@@ -245,13 +252,13 @@ end
 function Sort()
 	local complete = true
 
-	for _, dst in model do
+	for _, dst in pairs(model) do
 		if dst.targetItem and (dst.item ~= dst.targetItem or dst.count < dst.targetCount) then
 			complete = false
 
 			local sources, rank = {}, {}
 
-			for _, src in model do
+			for _, src in pairs(model) do
 				if src.item == dst.targetItem
 					and src ~= dst
 					and not (dst.item and src.class and src.class ~= itemClasses[dst.item])
@@ -264,7 +271,7 @@ function Sort()
 
 			sort(sources, function(a, b) return rank[a] < rank[b] end)
 
-			for _, src in sources do
+			for _, src in pairs(sources) do
 				if Move(src, dst) then
 					break
 				end
@@ -276,9 +283,9 @@ function Sort()
 end
 
 function Stack()
-	for _, src in model do
+	for _, src in pairs(model) do
 		if src.item and src.count < itemStacks[src.item] and src.item ~= src.targetItem then
-			for _, dst in model do
+			for _, dst in pairs(model) do
 				if dst ~= src and dst.item and dst.item == src.item and dst.count < itemStacks[dst.item] and dst.item ~= dst.targetItem then
 					Move(src, dst)
 				end
@@ -316,7 +323,7 @@ do
 	function Initialize()
 		model, counts, itemStacks, itemClasses, itemSortKeys = {}, {}, {}, {}, {}
 
-		for _, container in CONTAINERS do
+		for _, container in pairs(CONTAINERS) do
 			local class = ContainerClass(container)
 			for position = 1, GetContainerNumSlots(container) do
 				local slot = {container=container, position=position, class=class}
@@ -332,26 +339,26 @@ do
 		end
 
 		local free = {}
-		for item, count in counts do
+		for item, count in pairs(counts) do
 			local stacks = ceil(count / itemStacks[item])
 			free[item] = stacks
 			if itemClasses[item] then
 				free[itemClasses[item]] = (free[itemClasses[item]] or 0) + stacks
 			end
 		end
-		for _, slot in model do
+		for _, slot in pairs(model) do
 			if slot.class and free[slot.class] then
 				free[slot.class] = free[slot.class] - 1
 			end
 		end
 
 		local items = {}
-		for item in counts do
+		for item in pairs(counts) do
 			tinsert(items, item)
 		end
 		sort(items, function(a, b) return LT(itemSortKeys[a], itemSortKeys[b]) end)
 
-		for _, slot in model do
+		for _, slot in pairs(model) do
 			if slot.class then
 				for _, item in items do
 					if itemClasses[item] == slot.class and assign(slot, item) then
@@ -359,7 +366,7 @@ do
 					end
 				end
 			else
-				for _, item in items do
+				for _, item in pairs(items) do
 					if (not itemClasses[item] or free[itemClasses[item]] > 0) and assign(slot, item) then
 						if itemClasses[item] then
 							free[itemClasses[item]] = free[itemClasses[item]] - 1
@@ -376,8 +383,8 @@ function ContainerClass(container)
 	if container ~= 0 and container ~= BANK_CONTAINER then
 		local name = GetBagName(container)
 		if name then		
-			for class, info in CLASSES do
-				for _, itemID in info.containers do
+			for class, info in pairs(CLASSES) do
+				for _, itemID in pairs(info.containers) do
 					if name == GetItemInfo(itemID) then
 						return class
 					end
@@ -392,7 +399,10 @@ function Item(container, position)
 	if link then
 		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):(%d*):(%d*)')
 		itemID = tonumber(itemID)
-		local _, _, quality, _, type, subType, stack, invType = GetItemInfo(itemID)
+		p.kek('item:'..itemID)
+		p.bur(GetItemInfo('item:' .. itemID))
+		local _, _, quality, _, _, type, subType, stack, invType = GetItemInfo('item:' .. itemID)
+		p.euge(quality)
 		local charges, usable, soulbound, quest, conjured = TooltipInfo(container, position)
 
 		local sortKey = {}
@@ -463,7 +473,7 @@ function Item(container, position)
 		end
 		
 		tinsert(sortKey, ItemTypeKey(type))
-		tinsert(sortKey, ItemInvTypeKey(type, subType, invType))
+		-- tinsert(sortKey, ItemInvTypeKey(type, subType, invType))
 		tinsert(sortKey, ItemSubTypeKey(type, subType))
 		tinsert(sortKey, -quality)
 		tinsert(sortKey, itemID)
@@ -477,7 +487,7 @@ function Item(container, position)
 		itemStacks[key] = stack
 		itemSortKeys[key] = sortKey
 
-		for class, info in CLASSES do
+		for class, info in pairs(CLASSES) do
 			if info.items[itemID] then
 				itemClasses[key] = class
 				break
