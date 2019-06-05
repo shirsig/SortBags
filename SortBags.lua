@@ -399,10 +399,7 @@ function Item(container, position)
 	if link then
 		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):(%d*):(%d*)')
 		itemID = tonumber(itemID)
-		p.kek('item:'..itemID)
-		p.bur(GetItemInfo('item:' .. itemID))
 		local _, _, quality, _, _, type, subType, stack, invType = GetItemInfo('item:' .. itemID)
-		p.euge(quality)
 		local charges, usable, soulbound, quest, conjured = TooltipInfo(container, position)
 
 		local sortKey = {}
