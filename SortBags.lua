@@ -25,7 +25,7 @@ end
 
 local function set(...)
 	local t = {}
-	local arg = { n = select("#", ...), ... }
+	local arg = {n = select('#', ...), ...}
 	for i = 1, arg.n do
 		t[arg[i]] = true
 	end
@@ -34,7 +34,7 @@ end
 
 local function union(...)
 	local t = {}
-	local arg = { n = select("#", ...), ... }
+	local arg = {n = select('#', ...), ...}
 	for i = 1, arg.n do
 		for k in pairs(arg[i]) do
 			t[k] = true
