@@ -43,12 +43,6 @@ local function union(...)
 	return t
 end
 
--- local ITEM_TYPES = {GetAuctionItemClasses()}
-local ITEM_TYPES = {}
-for i = 1, 15 do
-	tinsert(ITEM_TYPES, GetItemClassInfo(i))
-end
-
 local MOUNTS = set(
 	-- rams
 	5864, 5872, 5873, 18785, 18786, 18787, 18244, 19030, 13328, 13329,
@@ -154,26 +148,31 @@ do
 	end)
 end
 
-do
-	local function key(t, value)
-		for k, v in pairs(t) do
-			if v == value then
-				return k
-			end
+function CategoryIndex(category)
+	for i, v in ipairs(AuctionCategories) do
+		if v.name == category then
+			return i
 		end
 	end
+	return 0
+end
 
-	function ItemTypeKey(itemClass)
-		return key(ITEM_TYPES, itemClass) or 0
+function SubCategoryIndex(categoryIndex, subCategory)
+	for i, v in ipairs(AuctionCategories[categoryIndex].subCategories) do
+		if v.name == subCategory then
+			return i
+		end
 	end
+	return 0
+end
 
-	function ItemSubTypeKey(itemClass, itemSubClass)
-		return key({GetAuctionItemSubClasses(ItemTypeKey(itemClass))}, itemClass) or 0
+function SubSubCategoryIndex(categoryIndex, subCategoryIndex, subSubCategory)
+	for i, v in ipairs(AuctionCategories[categoryIndex].subCategories[subCategoryIndex].subCategories) do
+		if v.name == subSubCategory then
+			return i
+		end
 	end
-
-	-- function ItemInvTypeKey(itemClass, itemSubClass, itemSlot) TODO retail
-	-- 	return key({GetAuctionInvTypes(ItemTypeKey(itemClass), ItemSubTypeKey(itemSubClass))}, itemSlot) or 0
-	-- end
+	return 0
 end
 
 function LT(a, b)
@@ -399,7 +398,7 @@ function Item(container, position)
 	if link then
 		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):(%d*):(%d*)')
 		itemID = tonumber(itemID)
-		local _, _, quality, _, _, type, subType, stack, invType = GetItemInfo('item:' .. itemID)
+		local _, _, quality, _, _, category, subCategory, stack, subSubCategory = GetItemInfo('item:' .. itemID)
 		local charges, usable, soulbound, quest, conjured = TooltipInfo(container, position)
 
 		local sortKey = {}
@@ -437,7 +436,7 @@ function Item(container, position)
 			tinsert(sortKey, 6)
 
 		-- reagents
-		elseif type == ITEM_TYPES[9] then
+		elseif category == AuctionCategories[9].name then
 			tinsert(sortKey, 7)
 
 		-- quest items
@@ -445,7 +444,7 @@ function Item(container, position)
 			tinsert(sortKey, 9)
 
 		-- consumables
-		elseif usable and type ~= ITEM_TYPES[1] and type ~= ITEM_TYPES[2] and type ~= ITEM_TYPES[8] or type == ITEM_TYPES[4] then
+		elseif usable and category ~= AuctionCategories[1].name and category ~= AuctionCategories[2].name and category ~= AuctionCategories[8].name or category == AuctionCategories[4].name then
 			tinsert(sortKey, 8)
 
 		-- enchanting materials
@@ -469,9 +468,11 @@ function Item(container, position)
 			tinsert(sortKey, 14)
 		end
 		
-		tinsert(sortKey, ItemTypeKey(type))
-		-- tinsert(sortKey, ItemInvTypeKey(type, subType, invType))
-		tinsert(sortKey, ItemSubTypeKey(type, subType))
+		local categoryIndex = CategoryIndex(category)
+		local subCategoryIndex = SubCategoryIndex(categoryIndex, subCategory)
+		tinsert(sortKey, CategoryIndex(category))
+		tinsert(sortKey, SubSubCategoryIndex(categoryIndex, subCategoryIndex, subSubCategory))
+		tinsert(sortKey, SubCategoryIndex(categoryIndex, subCategory))
 		tinsert(sortKey, -quality)
 		tinsert(sortKey, itemID)
 		tinsert(sortKey, (SortBagsRightToLeft and 1 or -1) * charges)
