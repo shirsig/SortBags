@@ -158,18 +158,22 @@ function CategoryIndex(category)
 end
 
 function SubCategoryIndex(categoryIndex, subCategory)
-	for i, v in ipairs(AuctionCategories[categoryIndex].subCategories) do
-		if v.name == subCategory then
-			return i
+	if categoryIndex > 0 then
+		for i, v in ipairs(AuctionCategories[categoryIndex].subCategories) do
+			if v.name == subCategory then
+				return i
+			end
 		end
 	end
 	return 0
 end
 
 function SubSubCategoryIndex(categoryIndex, subCategoryIndex, subSubCategory)
-	for i, v in ipairs(AuctionCategories[categoryIndex].subCategories[subCategoryIndex].subCategories) do
-		if v.name == subSubCategory then
-			return i
+	if categoryIndex > 0 and subCategoryIndex > 0 then
+		for i, v in ipairs(AuctionCategories[categoryIndex].subCategories[subCategoryIndex].subCategories) do
+			if v.name == subSubCategory then
+				return i
+			end
 		end
 	end
 	return 0
