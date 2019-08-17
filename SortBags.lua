@@ -148,37 +148,6 @@ do
 	end)
 end
 
-function CategoryIndex(category)
-	for i, v in ipairs(AuctionCategories) do
-		if v.name == category then
-			return i
-		end
-	end
-	return 0
-end
-
-function SubCategoryIndex(categoryIndex, subCategory)
-	if categoryIndex > 0 then
-		for i, v in ipairs(AuctionCategories[categoryIndex].subCategories) do
-			if v.name == subCategory then
-				return i
-			end
-		end
-	end
-	return 0
-end
-
-function SubSubCategoryIndex(categoryIndex, subCategoryIndex, subSubCategory)
-	if categoryIndex > 0 and subCategoryIndex > 0 then
-		for i, v in ipairs(AuctionCategories[categoryIndex].subCategories[subCategoryIndex].subCategories) do
-			if v.name == subSubCategory then
-				return i
-			end
-		end
-	end
-	return 0
-end
-
 function LT(a, b)
 	local i = 1
 	while true do
@@ -242,7 +211,7 @@ function TooltipInfo(container, position)
 			usable = true
 		elseif text == ITEM_SOULBOUND then
 			soulbound = true
-		elseif text == ITEM_BIND_QUEST then
+		elseif text == ITEM_BIND_QUEST then -- TODO retail can maybe use GetItemInfo bind info instead
 			quest = true
 		elseif text == ITEM_CONJURED then
 			conjured = true
@@ -402,7 +371,7 @@ function Item(container, position)
 	if link then
 		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):(%d*):(%d*)')
 		itemID = tonumber(itemID)
-		local _, _, quality, _, _, category, subCategory, stack, subSubCategory = GetItemInfo('item:' .. itemID)
+		local _, _, quality, _, _, _, _, stack, slot, _, _, classId, subClassId = GetItemInfo('item:' .. itemID)
 		local charges, usable, soulbound, quest, conjured = TooltipInfo(container, position)
 
 		local sortKey = {}
@@ -440,7 +409,7 @@ function Item(container, position)
 			tinsert(sortKey, 6)
 
 		-- reagents
-		elseif category == AuctionCategories[9].name then
+		elseif classId == 9 then
 			tinsert(sortKey, 7)
 
 		-- quest items
@@ -448,7 +417,7 @@ function Item(container, position)
 			tinsert(sortKey, 9)
 
 		-- consumables
-		elseif usable and category ~= AuctionCategories[1].name and category ~= AuctionCategories[2].name and category ~= AuctionCategories[8].name or category == AuctionCategories[4].name then
+		elseif usable and classId ~= 1 and classId ~= 2 and classId ~= 8 or classId == 4 then
 			tinsert(sortKey, 8)
 
 		-- enchanting materials
@@ -472,11 +441,9 @@ function Item(container, position)
 			tinsert(sortKey, 14)
 		end
 		
-		local categoryIndex = CategoryIndex(category)
-		local subCategoryIndex = SubCategoryIndex(categoryIndex, subCategory)
-		tinsert(sortKey, CategoryIndex(category))
-		tinsert(sortKey, SubSubCategoryIndex(categoryIndex, subCategoryIndex, subSubCategory))
-		tinsert(sortKey, SubCategoryIndex(categoryIndex, subCategory))
+		tinsert(sortKey, classId)
+		tinsert(sortKey, slot)
+		tinsert(sortKey, subClassId)
 		tinsert(sortKey, -quality)
 		tinsert(sortKey, itemID)
 		tinsert(sortKey, (SortBagsRightToLeft and 1 or -1) * charges)
