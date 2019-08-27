@@ -1,4 +1,4 @@
-## Interface: 31650
+## Interface: 11302
 ## Title: SortBags
 ## Notes: Sorts and stacks your items
 ## Author: shirsig
