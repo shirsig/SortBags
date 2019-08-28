@@ -224,13 +224,13 @@ end
 function Sort()
 	local complete = true
 
-	for _, dst in pairs(model) do
+	for _, dst in ipairs(model) do
 		if dst.targetItem and (dst.item ~= dst.targetItem or dst.count < dst.targetCount) then
 			complete = false
 
 			local sources, rank = {}, {}
 
-			for _, src in pairs(model) do
+			for _, src in ipairs(model) do
 				if src.item == dst.targetItem
 					and src ~= dst
 					and not (dst.item and src.class and src.class ~= itemClasses[dst.item])
@@ -243,7 +243,7 @@ function Sort()
 
 			sort(sources, function(a, b) return rank[a] < rank[b] end)
 
-			for _, src in pairs(sources) do
+			for _, src in ipairs(sources) do
 				if Move(src, dst) then
 					break
 				end
@@ -255,9 +255,9 @@ function Sort()
 end
 
 function Stack()
-	for _, src in pairs(model) do
+	for _, src in ipairs(model) do
 		if src.item and src.count < itemStacks[src.item] and src.item ~= src.targetItem then
-			for _, dst in pairs(model) do
+			for _, dst in ipairs(model) do
 				if dst ~= src and dst.item and dst.item == src.item and dst.count < itemStacks[dst.item] and dst.item ~= dst.targetItem then
 					Move(src, dst)
 				end
@@ -295,7 +295,7 @@ do
 	function Initialize()
 		model, counts, itemStacks, itemClasses, itemSortKeys = {}, {}, {}, {}, {}
 
-		for _, container in pairs(CONTAINERS) do
+		for _, container in ipairs(CONTAINERS) do
 			local class = ContainerClass(container)
 			for position = 1, GetContainerNumSlots(container) do
 				local slot = {container=container, position=position, class=class}
@@ -318,7 +318,7 @@ do
 				free[itemClasses[item]] = (free[itemClasses[item]] or 0) + stacks
 			end
 		end
-		for _, slot in pairs(model) do
+		for _, slot in ipairs(model) do
 			if slot.class and free[slot.class] then
 				free[slot.class] = free[slot.class] - 1
 			end
@@ -330,15 +330,15 @@ do
 		end
 		sort(items, function(a, b) return LT(itemSortKeys[a], itemSortKeys[b]) end)
 
-		for _, slot in pairs(model) do
+		for _, slot in ipairs(model) do
 			if slot.class then
-				for _, item in items do
+				for _, item in ipairs(items) do
 					if itemClasses[item] == slot.class and assign(slot, item) then
 						break
 					end
 				end
 			else
-				for _, item in pairs(items) do
+				for _, item in ipairs(items) do
 					if (not itemClasses[item] or free[itemClasses[item]] > 0) and assign(slot, item) then
 						if itemClasses[item] then
 							free[itemClasses[item]] = free[itemClasses[item]] - 1
