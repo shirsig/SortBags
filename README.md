@@ -9,8 +9,8 @@ __IMPORTANT: If you want buttons then get this too: https://github.com/shirsig/C
 /run SortBankBags() -- Sort bank
 /run SetSortBagsRightToLeft(Boolean) -- Set sort direction
 /run GetSortBagsRightToLeft(): Boolean -- Get sort direction
-/run SetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) -- bagId in (0, 1, 2, 3, 4)
-/run GetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP)
-/run SetBankBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) -- bagId in (-1, 5, 6, 7, 8, 9, 10)
-/run GetBankBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP)
+/run SetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) -- Set bag ignore status - bagId in (0, 1, 2, 3, 4)
+/run GetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP): Boolean -- Get bag ignore status
+/run SetBankBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) -- Set bag ignore status - bagId in (-1, 5, 6, 7, 8, 9, 10)
+/run GetBankBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP): Boolean -- Get bag ignore status
 ```
