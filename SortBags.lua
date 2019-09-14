@@ -5,8 +5,6 @@ CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
 local CONTAINERS
 
-_G.BagSlotFlag, _G.BankBagSlotFlag = {}, {}
-
 function _G.SortBags()
 	CONTAINERS = {0, 1, 2, 3, 4}
 	for i = #CONTAINERS, 1, -1 do
@@ -33,24 +31,6 @@ end
 
 function _G.SetSortBagsRightToLeft(enabled)
 	_G.SortBagsRightToLeft = enabled and 1 or nil
-end
-
-function _G.SetBagSlotFlag(index, flagIndex, checked)
-	BagSlotFlag[index] = BagSlotFlag[index] or {}
-	BagSlotFlag[index][flagIndex] = checked and true or false
-end
-
-function _G.SetBankBagSlotFlag(index, flagIndex, checked)
-	BankBagSlotFlag[index] = BankBagSlotFlag[index] or {}
-	BankBagSlotFlag[index][flagIndex] = checked and true or false
-end
-
-function _G.GetBagSlotFlag(index, flagIndex)
-	return (BagSlotFlag[index] or {})[flagIndex] and true or false
-end
-
-function _G.GetBankBagSlotFlag(index, flagIndex)
-	return (BankBagSlotFlag[index] or {})[flagIndex] and true or false
 end
 
 local function set(...)
@@ -164,12 +144,15 @@ do
 
 	local delay = 0
 	f:SetScript('OnUpdate', function(_, arg1)
+		if InCombatLockdown() or GetTime() > timeout then
+			f:Hide()
+			return
+		end 
 		delay = delay - arg1
 		if delay <= 0 then
 			delay = .2
-
 			local complete = Sort()
-			if complete or GetTime() > timeout then
+			if complete then
 				f:Hide()
 				return
 			end
