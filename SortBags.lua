@@ -8,7 +8,7 @@ local CONTAINERS
 function _G.SortBags()
 	CONTAINERS = {0, 1, 2, 3, 4}
 	for i = #CONTAINERS, 1, -1 do
-		if GetBagSlotFlag(CONTAINERS[i], LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
+		if GetBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
 		end
 	end
@@ -18,7 +18,7 @@ end
 function _G.SortBankBags()
 	CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
 	for i = #CONTAINERS, 1, -1 do
-		if GetBankBagSlotFlag(CONTAINERS[i], LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
+		if GetBankBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
 		end
 	end
