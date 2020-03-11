@@ -1,4 +1,4 @@
-## Interface: 11303
+## Interface: 11304
 ## Title: SortBags
 ## Version: 1.0.0
 ## Notes: Sorts and stacks your items
