@@ -203,7 +203,7 @@ end
 do
     local patterns = {}
     for i = 1, 10 do
-    	local text = gsub(ITEM_SPELL_CHARGES, '(-?%d+)(.-)|4([^;]-);', function(numberString, gap, numberForms)
+    	local text = gsub(format(ITEM_SPELL_CHARGES, i), '(-?%d+)(.-)|4([^;]-);', function(numberString, gap, numberForms)
 	        local singular, dual, plural
 	        _, _, singular, dual, plural = strfind(numberForms, '(.+):(.+):(.+)');
 	        if not singular then
@@ -242,9 +242,9 @@ function TooltipInfo(container, position)
 	for i = 1, SortBagsTooltip:NumLines() do
 		local text = getglobal('SortBagsTooltipTextLeft' .. i):GetText()
 
-		local charges = itemCharges(text)
-		if charges then
-			charges = charges
+		local extractedCharges = itemCharges(text)
+		if extractedCharges then
+			charges = extractedCharges
 		elseif strfind(text, '^' .. ITEM_SPELL_TRIGGER_ONUSE) then
 			usable = true
 		elseif text == ITEM_SOULBOUND then
