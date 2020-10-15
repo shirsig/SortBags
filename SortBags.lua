@@ -3,8 +3,6 @@ setfenv(1, setmetatable(_M, {__index=_G}))
 
 CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
-local CONTAINERS
-
 function _G.SortBags()
 	CONTAINERS = {0, 1, 2, 3, 4}
 	for i = #CONTAINERS, 1, -1 do
@@ -127,6 +125,19 @@ local CLASSES = {
 	},
 }
 
+do
+	local f = CreateFrame'Frame'
+	f:SetScript('OnEvent', function()
+		for container = -1, 10 do
+			for position = 1, GetContainerNumSlots(container) do
+				SetScanTooltip(container, position)
+			end
+		end
+	end)
+	f:RegisterEvent'BAG_UPDATE'
+	f:RegisterEvent'BANKFRAME_OPENED'
+end
+
 local model, itemStacks, itemClasses, itemSortKeys
 
 do
@@ -147,7 +158,7 @@ do
 		if InCombatLockdown() or GetTime() > timeout then
 			f:Hide()
 			return
-		end 
+		end
 		delay = delay - arg1
 		if delay <= 0 then
 			delay = .2
@@ -229,14 +240,7 @@ do
 end
 
 function TooltipInfo(container, position)
-	SortBagsTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
-	SortBagsTooltip:ClearLines()
-
-	if container == BANK_CONTAINER then
-		SortBagsTooltip:SetInventoryItem('player', BankButtonIDToInvSlotID(position))
-	else
-		SortBagsTooltip:SetBagItem(container, position)
-	end
+	SetScanTooltip(container, position)
 
 	local charges, usable, soulbound, quest, conjured
 	for i = 1, SortBagsTooltip:NumLines() do
@@ -257,6 +261,17 @@ function TooltipInfo(container, position)
 	end
 
 	return charges or 1, usable, soulbound, quest, conjured
+end
+
+function SetScanTooltip(container, position)
+	SortBagsTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+	SortBagsTooltip:ClearLines()
+
+	if container == BANK_CONTAINER then
+		SortBagsTooltip:SetInventoryItem('player', BankButtonIDToInvSlotID(position))
+	else
+		SortBagsTooltip:SetBagItem(container, position)
+	end
 end
 
 function Sort()
