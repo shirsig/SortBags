@@ -3,8 +3,11 @@ setfenv(1, setmetatable(_M, {__index=_G}))
 
 CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
+BAG_CONTAINERS = {0, 1, 2, 3, 4}
+BANK_BAG_CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
+
 function _G.SortBags()
-	CONTAINERS = {0, 1, 2, 3, 4}
+	CONTAINERS = BAG_CONTAINERS
 	for i = #CONTAINERS, 1, -1 do
 		if GetBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
@@ -14,7 +17,7 @@ function _G.SortBags()
 end
 
 function _G.SortBankBags()
-	CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
+	CONTAINERS = BANK_BAG_CONTAINERS
 	for i = #CONTAINERS, 1, -1 do
 		if GetBankBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
@@ -128,13 +131,27 @@ local CLASSES = {
 do
 	local f = CreateFrame'Frame'
 	f:SetScript('OnEvent', function()
-		for container = -1, 10 do
+		f:SetScript('OnUpdate', function()
+			for _, container in pairs(BAG_CONTAINERS) do
+				for position = 1, GetContainerNumSlots(container) do
+					SetScanTooltip(container, position)
+				end
+			end
+			f:SetScript('OnUpdate', nil)
+		end)
+	end)
+	f:RegisterEvent'PLAYER_LOGIN'
+end
+
+do
+	local f = CreateFrame'Frame'
+	f:SetScript('OnEvent', function()
+		for _, container in pairs(BANK_BAG_CONTAINERS) do
 			for position = 1, GetContainerNumSlots(container) do
 				SetScanTooltip(container, position)
 			end
 		end
 	end)
-	f:RegisterEvent'BAG_UPDATE'
 	f:RegisterEvent'BANKFRAME_OPENED'
 end
 
