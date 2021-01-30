@@ -7,7 +7,7 @@ BAG_CONTAINERS = {0, 1, 2, 3, 4}
 BANK_BAG_CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
 
 function _G.SortBags()
-	CONTAINERS = BAG_CONTAINERS
+	CONTAINERS = {unpack(BAG_CONTAINERS)}
 	for i = #CONTAINERS, 1, -1 do
 		if GetBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
@@ -17,7 +17,7 @@ function _G.SortBags()
 end
 
 function _G.SortBankBags()
-	CONTAINERS = BANK_BAG_CONTAINERS
+	CONTAINERS = {unpack(BANK_BAG_CONTAINERS)}
 	for i = #CONTAINERS, 1, -1 do
 		if GetBankBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
@@ -166,7 +166,10 @@ do
 
 	function Start()
 		if coroutine.status(process) == 'dead' then
-			Initialize()
+			local success = Initialize()
+			if not success then
+				return
+			end
 			process = coroutine.create(function()
 				while true do
 					suspended = false
@@ -385,7 +388,10 @@ do
 				local slot = {container=container, position=position, class=class}
 				local item = Item(container, position)
 				if item then
-					local _, count = GetContainerItemInfo(container, position)
+					local _, count, locked = GetContainerItemInfo(container, position)
+					if locked then
+						return false
+					end
 					slot.item = item
 					slot.count = count
 					counts[item] = (counts[item] or 0) + count
@@ -432,6 +438,7 @@ do
 				end
 			end
 		end
+		return true
 	end
 end
 
