@@ -159,32 +159,41 @@ local model, itemStacks, itemClasses, itemSortKeys
 
 do
 	local f = CreateFrame'Frame'
-	f:Hide()
 
-	local timeout
+	local process = coroutine.create(function() end);
+
+	local suspended
 
 	function Start()
-		if f:IsShown() then return end
-		Initialize()
-		timeout = GetTime() + 7
-		f:Show()
+		if coroutine.status(process) == 'dead' then
+			Initialize()
+			process = coroutine.create(function()
+				while true do
+					suspended = false
+					if InCombatLockdown() then
+						coroutine.yield()
+					end
+					local complete = Sort()
+					if complete then
+						return
+					end
+					Stack()
+					if not suspended then
+						coroutine.yield()
+					end
+				end
+			end)
+			f:Show()
+		end
 	end
 
-	local delay = 0
 	f:SetScript('OnUpdate', function(_, arg1)
-		if InCombatLockdown() or GetTime() > timeout then
-			f:Hide()
-			return
+		if coroutine.status(process) == 'suspended' then
+			suspended = true
+			coroutine.resume(process)
 		end
-		delay = delay - arg1
-		if delay <= 0 then
-			delay = .2
-			local complete = Sort()
-			if complete then
-				f:Hide()
-				return
-			end
-			Stack()
+		if coroutine.status(process) == 'dead' then
+			f:Hide()
 		end
 	end)
 end
@@ -224,6 +233,7 @@ function Move(src, dst)
 			src.count, dst.count = dst.count, src.count
 		end
 
+		coroutine.yield()
 		return true
     end
 end
@@ -292,35 +302,37 @@ function SetScanTooltip(container, position)
 end
 
 function Sort()
-	local complete = true
+	local complete, moved
+	repeat
+		complete, moved = true, false
+		for _, dst in ipairs(model) do
+			if dst.targetItem and (dst.item ~= dst.targetItem or dst.count < dst.targetCount) then
+				complete = false
 
-	for _, dst in ipairs(model) do
-		if dst.targetItem and (dst.item ~= dst.targetItem or dst.count < dst.targetCount) then
-			complete = false
+				local sources, rank = {}, {}
 
-			local sources, rank = {}, {}
-
-			for _, src in ipairs(model) do
-				if src.item == dst.targetItem
-					and src ~= dst
-					and not (dst.item and src.class and src.class ~= itemClasses[dst.item])
-					and not (src.targetItem and src.item == src.targetItem and src.count <= src.targetCount)
-				then
-					rank[src] = abs(src.count - dst.targetCount + (dst.item == dst.targetItem and dst.count or 0))
-					tinsert(sources, src)
+				for _, src in ipairs(model) do
+					if src.item == dst.targetItem
+						and src ~= dst
+						and not (dst.item and src.class and src.class ~= itemClasses[dst.item])
+						and not (src.targetItem and src.item == src.targetItem and src.count <= src.targetCount)
+					then
+						rank[src] = abs(src.count - dst.targetCount + (dst.item == dst.targetItem and dst.count or 0))
+						tinsert(sources, src)
+					end
 				end
-			end
 
-			sort(sources, function(a, b) return rank[a] < rank[b] end)
+				sort(sources, function(a, b) return rank[a] < rank[b] end)
 
-			for _, src in ipairs(sources) do
-				if Move(src, dst) then
-					break
+				for _, src in ipairs(sources) do
+					if Move(src, dst) then
+						moved = true
+						break
+					end
 				end
 			end
 		end
-	end
-
+	until complete or not moved
 	return complete
 end
 
@@ -329,7 +341,9 @@ function Stack()
 		if src.item and src.count < itemStacks[src.item] and src.item ~= src.targetItem then
 			for _, dst in ipairs(model) do
 				if dst ~= src and dst.item and dst.item == src.item and dst.count < itemStacks[dst.item] and dst.item ~= dst.targetItem then
-					Move(src, dst)
+					if Move(src, dst) then
+						return
+					end
 				end
 			end
 		end
@@ -439,9 +453,9 @@ end
 function Item(container, position)
 	local link = GetContainerItemLink(container, position)
 	if link then
-		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):(%d*):(%d*)')
+		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):::::(%d*):(%d*)')
 		itemID = tonumber(itemID)
-		local _, _, quality, _, _, _, _, stack, slot, _, sellPrice, classId, subClassId = GetItemInfo('item:' .. itemID)
+		local itemName, _, quality, _, _, _, _, stack, slot, _, sellPrice, classId, subClassId = GetItemInfo('item:' .. itemID)
 		local charges, usable, soulbound, quest, conjured = TooltipInfo(container, position)
 
 		local sortKey = {}
@@ -517,6 +531,7 @@ function Item(container, position)
 		tinsert(sortKey, slot)
 		tinsert(sortKey, subClassId)
 		tinsert(sortKey, -quality)
+		tinsert(sortKey, itemName)
 		tinsert(sortKey, itemID)
 		tinsert(sortKey, (SortBagsRightToLeft and 1 or -1) * charges)
 		tinsert(sortKey, suffixID)
