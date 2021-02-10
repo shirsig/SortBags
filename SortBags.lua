@@ -165,29 +165,26 @@ do
 	local suspended
 
 	function Start()
-		if coroutine.status(process) == 'dead' then
-			local success = Initialize()
-			if not success then
-				return
+		process = coroutine.create(function()
+			while not Initialize() do
+				coroutine.yield()
 			end
-			process = coroutine.create(function()
-				while true do
-					suspended = false
-					if InCombatLockdown() then
-						return
-					end
-					local complete = Sort()
-					if complete then
-						return
-					end
-					Stack()
-					if not suspended then
-						coroutine.yield()
-					end
+			while true do
+				suspended = false
+				if InCombatLockdown() then
+					return
 				end
-			end)
-			f:Show()
-		end
+				local complete = Sort()
+				if complete then
+					return
+				end
+				Stack()
+				if not suspended then
+					coroutine.yield()
+				end
+			end
+		end)
+		f:Show()
 	end
 
 	f:SetScript('OnUpdate', function(_, arg1)
