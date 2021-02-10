@@ -174,7 +174,7 @@ do
 				while true do
 					suspended = false
 					if InCombatLockdown() then
-						coroutine.yield()
+						return
 					end
 					local complete = Sort()
 					if complete then
