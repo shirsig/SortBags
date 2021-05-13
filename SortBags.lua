@@ -54,47 +54,31 @@ local function union(...)
 	return t
 end
 
-local MOUNTS = set(
-	-- rams
-	5864, 5872, 5873, 18785, 18786, 18787, 18244, 19030, 13328, 13329,
-	-- horses
-	2411, 2414, 5655, 5656, 18778, 18776, 18777, 18241, 12353, 12354,
-	-- sabers
-	8629, 8631, 8632, 18766, 18767, 18902, 18242, 13086, 19902, 12302, 12303, 8628, 12326,
-	-- mechanostriders
-	8563, 8595, 13321, 13322, 18772, 18773, 18774, 18243, 13326, 13327,
-	-- kodos
-	15277, 15290, 18793, 18794, 18795, 18247, 15292, 15293,
-	-- wolves
-	1132, 5665, 5668, 18796, 18797, 18798, 18245, 12330, 12351,
-	-- raptors
-	8588, 8591, 8592, 18788, 18789, 18790, 18246, 19872, 8586, 13317,
-	-- undead horses
-	13331, 13332, 13333, 13334, 18791, 18248, 13335,
-	-- qiraji battle tanks
-	21218, 21321, 21323, 21324, 21176
-)
-
 local SPECIAL = set(5462, 17696, 17117, 13347, 13289, 11511)
 
 local KEYS = set(9240, 17191, 13544, 12324, 16309, 12384, 20402)
 
-local TOOLS = set(7005, 12709, 19727, 5956, 2901, 6219, 10498, 6218, 6339, 11130, 11145, 16207, 9149, 15846, 6256, 6365, 6367)
+local RODS = set(6218, 6339, 11130, 11145, 16207, 22461, 22462, 22463)
+
+local TOOLS = union(
+	RODS,
+	set(5060, 7005, 12709, 19727, 5956, 2901, 6219, 10498, 9149, 15846, 6256, 6365, 6367)
+);
 
 local ENCHANTING_MATERIALS = set(
 	-- dust
-	10940, 11083, 11137, 11176, 16204,
+	10940, 11083, 11137, 11176, 16204, 22445,
 	-- essence
-	10938, 10939, 10998, 11082, 11134, 11135, 11174, 11175, 16202, 16203,
+	10938, 10939, 10998, 11082, 11134, 11135, 11174, 11175, 16202, 16203, 22447, 22446,
 	-- shard
-	10978, 11084, 11138, 11139, 11177, 11178, 14343, 14344,
+	10978, 11084, 11138, 11139, 11177, 11178, 14343, 14344, 22448, 22449,
 	-- crystal
-	20725
+	20725, 22450
 )
 
-local HERBS = set(765, 785, 2447, 2449, 2450, 2452, 2453, 3355, 3356, 3357, 3358, 3369, 3818, 3819, 3820, 3821, 4625, 8153, 8831, 8836, 8838, 8839, 8845, 8846, 13463, 13464, 13465, 13466, 13467, 13468)
+local HERBS = set(765, 785, 2447, 2449, 2450, 2452, 2453, 3355, 3356, 3357, 3358, 3369, 3818, 3819, 3820, 3821, 4625, 8153, 8831, 8836, 8838, 8839, 8845, 8846, 11040, 13463, 13464, 13465, 13466, 13467, 13468, 22710, 22785, 22786, 22787, 22788, 22789, 22790, 22791, 22792, 22793, 22794, 22795, 23501)
 
-local SEEDS = set(17034, 17035, 17036, 17037, 17038)
+local SEEDS = set(17034, 17035, 17036, 17037, 17038, 18297, 22147)
 
 local CLASSES = {
 	-- arrow
@@ -109,22 +93,45 @@ local CLASSES = {
 	},
 	-- soul
 	{
-		containers = {22243, 22244, 21340, 21341, 21342},
+		containers = {22243, 22244, 21340, 21341, 21342, 21872},
 		items = set(6265),
 	},
 	-- ench
 	{
-		containers = {22246, 22248, 22249},
+		containers = {22246, 22248, 22249, 22249, 21858},
 		items = union(
 			ENCHANTING_MATERIALS,
-			-- rods
-			set(6218, 6339, 11130, 11145, 16207)
+			RODS
 		),
 	},
 	-- herb
 	{
-		containers = {22250, 22251, 22252},
-		items = union(HERBS, SEEDS)
+		containers = {22250, 22251, 22252, 38225},
+		items = union(
+			HERBS,
+			SEEDS,
+			set(2263, 5168, 11020, 11022, 11024, 10286, 11018, 11514, 11951, 11952, 16205, 16208, 17760, 19727, 21886, 22094, 22575, 23788, 24246, 24401, 24245, 31300)
+		)
+	},
+	-- mining
+	{
+		containers = {29540, 30746},
+		items = {},
+	},
+	-- leather
+	{
+		containers = {34482, 34490},
+		items = {},
+	},
+	-- gems
+	{
+		containers = {24270, 30747},
+		items = {},
+	},
+	-- engineering
+	{
+		containers = {23774, 23775, 30745},
+		items = {},
 	},
 }
 
@@ -269,7 +276,7 @@ end
 function TooltipInfo(container, position)
 	SetScanTooltip(container, position)
 
-	local charges, usable, soulbound, quest, conjured
+	local charges, usable, soulbound, quest, conjured, mount
 	for i = 1, SortBagsTooltip:NumLines() do
 		local text = getglobal('SortBagsTooltipTextLeft' .. i):GetText()
 
@@ -284,10 +291,12 @@ function TooltipInfo(container, position)
 			quest = true
 		elseif text == ITEM_CONJURED then
 			conjured = true
+		elseif text == MOUNT then
+			mount = true
 		end
 	end
 
-	return charges or 1, usable, soulbound, quest, conjured
+	return charges or 1, usable, soulbound, quest, conjured, mount
 end
 
 function SetScanTooltip(container, position)
@@ -457,11 +466,10 @@ end
 function Item(container, position)
 	local link = GetContainerItemLink(container, position)
 	if link then
-		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):::::(%d*):(%d*)')
+		local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):::::(%-?%d*):(%-?%d*)')
 		itemID = tonumber(itemID)
 		local itemName, _, quality, _, _, _, _, stack, slot, _, sellPrice, classId, subClassId = GetItemInfo('item:' .. itemID)
-		local charges, usable, soulbound, quest, conjured = TooltipInfo(container, position)
-
+		local charges, usable, soulbound, quest, conjured, mount = TooltipInfo(container, position)
 		local sortKey = {}
 
 		-- hearthstone
@@ -469,7 +477,7 @@ function Item(container, position)
 			tinsert(sortKey, 1)
 
 		-- mounts
-		elseif MOUNTS[itemID] then
+		elseif mount then
 			tinsert(sortKey, 2)
 
 		-- special items
