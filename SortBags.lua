@@ -4,7 +4,7 @@ setfenv(1, setmetatable(_M, {__index=_G}))
 CreateFrame('GameTooltip', 'SortBagsTooltip', nil, 'GameTooltipTemplate')
 
 BAG_CONTAINERS = {0, 1, 2, 3, 4}
-BANK_BAG_CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
+BANK_BAG_CONTAINERS = {-1, 5, 6, 7, 8, 9, 10, 11}
 
 function _G.SortBags()
 	CONTAINERS = {unpack(BAG_CONTAINERS)}
@@ -478,7 +478,7 @@ function Item(container, position)
 		local sortKey = {}
 
 		-- hearthstone
-		if itemID == 6948 then
+		if itemID == 6948 or itemID == 184871 then
 			tinsert(sortKey, 1)
 
 		-- mounts
