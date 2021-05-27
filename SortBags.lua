@@ -85,13 +85,13 @@ local LEATHER = set(5116, 6470, 6471, 7286, 7287, 7392, 11512, 12607, 12731, 293
 local CLASSES = {
 	-- arrow
 	{
-		containers = {2101, 5439, 7278, 11362, 3573, 3605, 7371, 8217, 2662, 19319, 18714},
-		items = set(2512, 2515, 3030, 3464, 9399, 11285, 12654, 18042, 19316),
+		containers = {2101, 5439, 7278, 11362, 3573, 3605, 7371, 8217, 2662, 19319, 18714, 29143, 29144, 34105, 34100},
+		items = set(2512, 2515, 3030, 3464, 9399, 11285, 12654, 18042, 19316, 28053, 31737, 32760, 34581, 28056, 31949, 24412, 24417),
 	},
 	-- bullet
 	{
-		containers = {2102, 5441, 7279, 11363, 3574, 3604, 7372, 8218, 2663, 19320},
-		items = set(2516, 2519, 3033, 3465, 4960, 5568, 8067, 8068, 8069, 10512, 10513, 11284, 11630, 13377, 15997, 19317),
+		containers = {2102, 5441, 7279, 11363, 3574, 3604, 7372, 8218, 2663, 19320, 29118, 34106, 34099},
+		items = set(2516, 2519, 3033, 3465, 4960, 5568, 8067, 8068, 8069, 10512, 10513, 11284, 11630, 13377, 15997, 19317, 32761, 32883, 32882, 28060),
 	},
 	-- soul
 	{
@@ -227,7 +227,7 @@ end
 function Move(src, dst)
     local texture, _, srcLocked = GetContainerItemInfo(src.container, src.position)
     local _, _, dstLocked = GetContainerItemInfo(dst.container, dst.position)
-    
+
 	if texture and not srcLocked and not dstLocked then
 		ClearCursor()
        	PickupContainerItem(src.container, src.position)
@@ -456,13 +456,13 @@ end
 function ContainerClass(container)
 	if container ~= 0 and container ~= BANK_CONTAINER then
 		local name = GetBagName(container)
-		if name then		
+		if name then
 			for class, info in pairs(CLASSES) do
 				for _, itemID in pairs(info.containers) do
 					if name == GetItemInfo(itemID) then
 						return class
 					end
-				end	
+				end
 			end
 		end
 	end
@@ -543,7 +543,7 @@ function Item(container, position)
 			tinsert(sortKey, 14)
 			tinsert(sortKey, sellPrice)
 		end
-		
+
 		tinsert(sortKey, classId)
 		tinsert(sortKey, slot)
 		tinsert(sortKey, subClassId)
