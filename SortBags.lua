@@ -86,12 +86,12 @@ local CLASSES = {
 	-- arrow
 	{
 		containers = {2101, 5439, 7278, 11362, 3573, 3605, 7371, 8217, 2662, 19319, 18714, 29143, 29144, 34105, 34100},
-		items = set(2512, 2515, 3030, 3464, 9399, 11285, 12654, 18042, 19316, 28053, 31737, 32760, 34581, 28056, 31949, 24412, 24417),
+		items = set(2512, 2515, 3030, 3464, 9399, 11285, 12654, 18042, 19316, 28053, 31737, 10579, 34581, 28056, 31949, 24412, 24417, 30611, 33803, 30319),
 	},
 	-- bullet
 	{
 		containers = {2102, 5441, 7279, 11363, 3574, 3604, 7372, 8218, 2663, 19320, 29118, 34106, 34099},
-		items = set(2516, 2519, 3033, 3465, 4960, 5568, 8067, 8068, 8069, 10512, 10513, 11284, 11630, 13377, 15997, 19317, 32761, 32883, 32882, 28060),
+		items = set(2516, 2519, 3033, 3465, 4960, 5568, 8067, 8068, 8069, 10512, 10513, 11284, 11630, 13377, 15997, 19317, 30612, 32883, 32882, 28060, 28061, 23772, 23773, 34582, 31735),
 	},
 	-- soul
 	{
@@ -225,12 +225,12 @@ function LT(a, b)
 end
 
 function Move(src, dst)
-    local texture, _, srcLocked = GetContainerItemInfo(src.container, src.position)
-    local _, _, dstLocked = GetContainerItemInfo(dst.container, dst.position)
+	local texture, _, srcLocked = GetContainerItemInfo(src.container, src.position)
+	local _, _, dstLocked = GetContainerItemInfo(dst.container, dst.position)
 
 	if texture and not srcLocked and not dstLocked then
 		ClearCursor()
-       	PickupContainerItem(src.container, src.position)
+		PickupContainerItem(src.container, src.position)
 		PickupContainerItem(dst.container, dst.position)
 
 		if src.item == dst.item then
@@ -247,34 +247,34 @@ function Move(src, dst)
 
 		coroutine.yield()
 		return true
-    end
+	end
 end
 
 do
-    local patterns = {}
-    for i = 1, 10 do
-    	local text = gsub(format(ITEM_SPELL_CHARGES, i), '(-?%d+)(.-)|4([^;]-);', function(numberString, gap, numberForms)
-	        local singular, dual, plural
-	        _, _, singular, dual, plural = strfind(numberForms, '(.+):(.+):(.+)');
-	        if not singular then
-	            _, _, singular, plural = strfind(numberForms, '(.+):(.+)')
-	        end
-	        local i = abs(tonumber(numberString))
-	        local numberForm
-	        if i == 1 then
-	            numberForm = singular
-	        elseif i == 2 then
-	            numberForm = dual or plural
-	        else
-	            numberForm = plural
-	        end
-	        return numberString .. gap .. numberForm
-	    end)
-        patterns[text] = i
-    end
+	local patterns = {}
+	for i = 1, 10 do
+		local text = gsub(format(ITEM_SPELL_CHARGES, i), '(-?%d+)(.-)|4([^;]-);', function(numberString, gap, numberForms)
+			local singular, dual, plural
+			_, _, singular, dual, plural = strfind(numberForms, '(.+):(.+):(.+)');
+			if not singular then
+				_, _, singular, plural = strfind(numberForms, '(.+):(.+)')
+			end
+			local i = abs(tonumber(numberString))
+			local numberForm
+			if i == 1 then
+				numberForm = singular
+			elseif i == 2 then
+				numberForm = dual or plural
+			else
+				numberForm = plural
+			end
+			return numberString .. gap .. numberForm
+		end)
+		patterns[text] = i
+	end
 
 	function itemCharges(text)
-        return patterns[text]
+		return patterns[text]
 	end
 end
 
