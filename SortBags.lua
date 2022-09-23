@@ -1,3 +1,5 @@
+local addonName, MenuClass = ...
+
 local _G, _M = getfenv(0), {}
 setfenv(1, setmetatable(_M, {__index=_G}))
 
@@ -536,4 +538,38 @@ function Item(container, position)
 
 		return key
 	end
+end
+
+
+
+local bagButtons = {}
+bagButtons[0] = ContainerFrame1PortraitButton
+bagButtons[1] = ContainerFrame2PortraitButton
+bagButtons[2] = ContainerFrame3PortraitButton
+bagButtons[3] = ContainerFrame4PortraitButton
+bagButtons[4] = ContainerFrame5PortraitButton
+
+local menu = {}
+
+for k, v in pairs(bagButtons) do
+	menu[k] = MenuClass:New()
+	menu[k]:SetAutoHideDelay(1.0)
+	menu[k]:AddItem("Ignore Bag", function()
+		local state = GetBagSlotFlag(k, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP)
+		local newState = not state
+		menu[k]:SetAttribute("Ignore Bag", "checked", newState)
+		SetBagSlotFlag(k, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, newState)
+	end)
+	menu[k]:SetAttribute("Ignore Bag", "checked", GetBagSlotFlag(k, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP))
+	menu[k]:AddItem("Cancel", function()
+	    -- do nothing, just close.
+	end)
+
+	v:SetScript("OnMouseUp", function(self, button)
+		if button == "RightButton" then
+			if v:GetID() ~= 0 then
+				menu[k]:Show()
+			end
+		end
+	end)
 end

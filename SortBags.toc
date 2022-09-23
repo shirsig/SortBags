@@ -1,7 +1,8 @@
 ## Interface: 30400
 ## Title: SortBags
-## Version: @project-version@
+## Version: v3.0.0
 ## Notes: Sorts and stacks your items
 ## Author: shirsig
 ## SavedVariablesPerCharacter: SortBagsRightToLeft
+ContextMenuMaker.lua
 SortBags.lua
