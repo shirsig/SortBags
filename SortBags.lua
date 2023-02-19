@@ -471,40 +471,44 @@ function Item(container, position)
 
 		-- soul shards
 		elseif itemID == 6265 then
-			tinsert(sortKey, 12)
+			tinsert(sortKey, 13)
 
 		-- conjured items
 		elseif conjured then
-			tinsert(sortKey, 13)
+			tinsert(sortKey, 14)
 
 		-- soulbound items
 		elseif soulbound then
 			tinsert(sortKey, 5)
 
+		-- heirlooms
+		elseif quality == 7 then
+			tinsert(sortKey, 6)
+
 		-- reagents
 		elseif classId == 9 then
-			tinsert(sortKey, 6)
+			tinsert(sortKey, 7)
 
 		-- quest items
 		elseif bindType == 4 then
-			tinsert(sortKey, 8)
+			tinsert(sortKey, 9)
 
 		-- consumables
 		elseif usable and classId ~= 1 and classId ~= 2 and classId ~= 8 or classId == 4 then
-			tinsert(sortKey, 7)
+			tinsert(sortKey, 8)
 
 		-- higher quality
 		elseif quality > 1 then
-			tinsert(sortKey, 9)
+			tinsert(sortKey, 10)
 
 		-- common quality
 		elseif quality == 1 then
-			tinsert(sortKey, 10)
+			tinsert(sortKey, 11)
 			tinsert(sortKey, -sellPrice)
 
 		-- junk
 		elseif quality == 0 then
-			tinsert(sortKey, 11)
+			tinsert(sortKey, 12)
 			tinsert(sortKey, sellPrice)
 		end
 
