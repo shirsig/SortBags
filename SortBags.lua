@@ -304,7 +304,7 @@ function Sort()
 				for _, src in ipairs(model) do
 					if src.item == dst.targetItem
 						and src ~= dst
-						and not (dst.item and src.class and src.class ~= itemClasses[dst.item])
+						and not (dst.item and src.class and not itemClasses[dst.item][src.class])
 						and not (src.targetItem and src.item == src.targetItem and src.count <= src.targetCount)
 					then
 						rank[src] = abs(src.count - dst.targetCount + (dst.item == dst.targetItem and dst.count or 0))
@@ -387,20 +387,6 @@ do
 			end
 		end
 
-		local free = {}
-		for item, count in pairs(counts) do
-			local stacks = ceil(count / itemStacks[item])
-			free[item] = stacks
-			if itemClasses[item] then
-				free[itemClasses[item]] = (free[itemClasses[item]] or 0) + stacks
-			end
-		end
-		for _, slot in ipairs(model) do
-			if slot.class and free[slot.class] then
-				free[slot.class] = free[slot.class] - 1
-			end
-		end
-
 		local items = {}
 		for item in pairs(counts) do
 			tinsert(items, item)
@@ -410,16 +396,16 @@ do
 		for _, slot in ipairs(model) do
 			if slot.class then
 				for _, item in ipairs(items) do
-					if itemClasses[item] == slot.class and assign(slot, item) then
+					if itemClasses[item][slot.class] and assign(slot, item) then
 						break
 					end
 				end
-			else
+			end
+		end
+		for _, slot in ipairs(model) do
+			if not slot.targetItem then
 				for _, item in ipairs(items) do
-					if (not itemClasses[item] or free[itemClasses[item]] > 0) and assign(slot, item) then
-						if itemClasses[item] then
-							free[itemClasses[item]] = free[itemClasses[item]] - 1
-						end
+					if assign(slot, item) then
 						break
 					end
 				end
@@ -428,6 +414,7 @@ do
 		return true
 	end
 end
+
 
 function ContainerClass(container)
 	if container ~= 0 and container ~= BANK_CONTAINER then
@@ -528,10 +515,10 @@ function Item(container, position)
 		itemStacks[key] = stack
 		itemSortKeys[key] = sortKey
 
+		itemClasses[key] = {}
 		for class, info in pairs(CLASSES) do
 			if info.items[itemID] then
-				itemClasses[key] = class
-				break
+				itemClasses[key][class] = true
 			end
 		end
 
