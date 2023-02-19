@@ -403,7 +403,7 @@ do
 			end
 		end
 		for _, slot in ipairs(model) do
-			if not slot.targetItem then
+			if not slot.class then
 				for _, item in ipairs(items) do
 					if assign(slot, item) then
 						break
