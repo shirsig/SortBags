@@ -1,4 +1,4 @@
-## Interface: 30401
+## Interface: 30402
 ## Title: SortBags
 ## Version: @project-version@
 ## Notes: Sorts and stacks your items
