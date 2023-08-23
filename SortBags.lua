@@ -236,7 +236,7 @@ end
 function TooltipInfo(container, position)
 	SetScanTooltip(container, position)
 
-	local charges, usable, soulbound, quest, conjured, mount
+	local charges, usable, soulbound, conjured
 	for i = 1, SortBagsTooltip:NumLines() do
 		local text = getglobal('SortBagsTooltipTextLeft' .. i):GetText()
 
@@ -247,16 +247,12 @@ function TooltipInfo(container, position)
 			usable = true
 		elseif text == ITEM_SOULBOUND then
 			soulbound = true
-		elseif text == ITEM_BIND_QUEST then -- TODO retail can maybe use GetItemInfo bind info instead
-			quest = true
 		elseif text == ITEM_CONJURED then
 			conjured = true
-		elseif text == MOUNT then
-			mount = true
 		end
 	end
 
-	return charges or 1, usable, soulbound, quest, conjured, mount
+	return charges or 1, usable, soulbound, conjured
 end
 
 function SetScanTooltip(container, position)
@@ -414,66 +410,62 @@ function Item(container, position)
 	if link then
         local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):::::(%d*):(%d*)')
 		itemID = tonumber(itemID)
-		local itemName, _, quality, _, _, _, _, stack, slot, _, sellPrice, classId, subClassId = GetItemInfo('item:' .. itemID)
-		local charges, usable, soulbound, quest, conjured, mount = TooltipInfo(container, position)
+		local itemName, _, quality, _, _, _, _, stack, slot, _, sellPrice, classId, subClassId, bindType = GetItemInfo('item:' .. itemID)
+		local charges, usable, soulbound, conjured = TooltipInfo(container, position)
 		local sortKey = {}
 
 		-- hearthstone
 		if itemID == 6948 then
 			tinsert(sortKey, 1)
 
-		-- mounts
-		elseif mount then
-			tinsert(sortKey, 2)
-
 		-- special items
 		elseif SPECIAL[itemID] then
-			tinsert(sortKey, 3)
+			tinsert(sortKey, 2)
 
 		-- key items
 		elseif KEYS[itemID] then
-			tinsert(sortKey, 4)
+			tinsert(sortKey, 3)
 
 		-- tools
 		elseif TOOLS[itemID] then
-			tinsert(sortKey, 5)
+			tinsert(sortKey, 4)
 
 		-- soul shards
 		elseif itemID == 6265 then
-			tinsert(sortKey, 13)
+			tinsert(sortKey, 12)
 
 		-- conjured items
 		elseif conjured then
-			tinsert(sortKey, 14)
+			tinsert(sortKey, 13)
 
 		-- soulbound items
 		elseif soulbound then
-			tinsert(sortKey, 6)
+			tinsert(sortKey, 5)
 
 		-- reagents
 		elseif classId == 9 then
-			tinsert(sortKey, 7)
+			tinsert(sortKey, 6)
 
 		-- quest items
-		elseif quest then
-			tinsert(sortKey, 9)
+		elseif bindType == 4 then
+			tinsert(sortKey, 8)
 
 		-- consumables
 		elseif usable and classId ~= 1 and classId ~= 2 and classId ~= 8 or classId == 4 then
-			tinsert(sortKey, 8)
+			tinsert(sortKey, 7)
 
 		-- higher quality
 		elseif quality > 1 then
-			tinsert(sortKey, 10)
+			tinsert(sortKey, 9)
 
 		-- common quality
 		elseif quality == 1 then
-			tinsert(sortKey, 11)
+			tinsert(sortKey, 10)
 			tinsert(sortKey, -sellPrice)
 
 		-- junk
 		elseif quality == 0 then
-			tinsert(sortKey, 12)
+			tinsert(sortKey, 11)
 			tinsert(sortKey, sellPrice)
 		end
 
