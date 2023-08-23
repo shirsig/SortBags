@@ -9,7 +9,7 @@ BANK_BAG_CONTAINERS = {-1, 5, 6, 7, 8, 9, 10}
 function _G.SortBags()
 	CONTAINERS = {unpack(BAG_CONTAINERS)}
 	for i = #CONTAINERS, 1, -1 do
-		if GetBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
+		if C_Container.GetBagSlotFlag(CONTAINERS[i], LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
 		end
 	end
@@ -19,7 +19,7 @@ end
 function _G.SortBankBags()
 	CONTAINERS = {unpack(BANK_BAG_CONTAINERS)}
 	for i = #CONTAINERS, 1, -1 do
-		if GetBankBagSlotFlag(i - 1, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
+		if C_Container.GetBagSlotFlag(CONTAINERS[i], LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
 			tremove(CONTAINERS, i)
 		end
 	end
@@ -102,12 +102,12 @@ do
 	local function updateHandler()
 		if GetTime() - lastUpdate > 1 then
 			for _, container in pairs(BAG_CONTAINERS) do
-				for position = 1, GetContainerNumSlots(container) do
+				for position = 1, C_Container.GetContainerNumSlots(container) do
 					SetScanTooltip(container, position)
 				end
 			end
 			for _, container in pairs(BANK_BAG_CONTAINERS) do
-				for position = 1, GetContainerNumSlots(container) do
+				for position = 1, C_Container.GetContainerNumSlots(container) do
 					SetScanTooltip(container, position)
 				end
 			end
@@ -180,13 +180,13 @@ function LT(a, b)
 end
 
 function Move(src, dst)
-	local texture, _, srcLocked = GetContainerItemInfo(src.container, src.position)
-	local _, _, dstLocked = GetContainerItemInfo(dst.container, dst.position)
+	local srcContainerInfo = C_Container.GetContainerItemInfo(src.container, src.position)
+	local dstContainerInfo = C_Container.GetContainerItemInfo(dst.container, dst.position)
 
-	if texture and not srcLocked and not dstLocked then
+	if srcContainerInfo and not srcContainerInfo.isLocked and (not dstContainerInfo or not dstContainerInfo.isLocked) then
 		ClearCursor()
-		PickupContainerItem(src.container, src.position)
-		PickupContainerItem(dst.container, dst.position)
+		C_Container.PickupContainerItem(src.container, src.position)
+		C_Container.PickupContainerItem(dst.container, dst.position)
 
 		if src.item == dst.item then
 			local count = min(src.count, itemStacks[dst.item] - dst.count)
@@ -283,7 +283,7 @@ function Sort()
 				for _, src in ipairs(model) do
 					if src.item == dst.targetItem
 						and src ~= dst
-						and not (dst.item and src.class and src.class ~= itemClasses[dst.item])
+						and not (dst.item and src.class and not itemClasses[dst.item][src.class])
 						and not (src.targetItem and src.item == src.targetItem and src.count <= src.targetCount)
 					then
 						rank[src] = abs(src.count - dst.targetCount + (dst.item == dst.targetItem and dst.count or 0))
@@ -350,33 +350,19 @@ do
 
 		for _, container in ipairs(CONTAINERS) do
 			local class = ContainerClass(container)
-			for position = 1, GetContainerNumSlots(container) do
+			for position = 1, C_Container.GetContainerNumSlots(container) do
 				local slot = {container=container, position=position, class=class}
 				local item = Item(container, position)
 				if item then
-					local _, count, locked = GetContainerItemInfo(container, position)
-					if locked then
+					local containerInfo = C_Container.GetContainerItemInfo(container, position)
+					if containerInfo and containerInfo.isLocked then
 						return false
 					end
 					slot.item = item
-					slot.count = count
-					counts[item] = (counts[item] or 0) + count
+					slot.count = containerInfo.stackCount
+					counts[item] = (counts[item] or 0) + containerInfo.stackCount
 				end
 				insert(model, slot)
-			end
-		end
-
-		local free = {}
-		for item, count in pairs(counts) do
-			local stacks = ceil(count / itemStacks[item])
-			free[item] = stacks
-			if itemClasses[item] then
-				free[itemClasses[item]] = (free[itemClasses[item]] or 0) + stacks
-			end
-		end
-		for _, slot in ipairs(model) do
-			if slot.class and free[slot.class] then
-				free[slot.class] = free[slot.class] - 1
 			end
 		end
 
@@ -389,16 +375,16 @@ do
 		for _, slot in ipairs(model) do
 			if slot.class then
 				for _, item in ipairs(items) do
-					if itemClasses[item] == slot.class and assign(slot, item) then
+					if itemClasses[item][slot.class] and assign(slot, item) then
 						break
 					end
 				end
-			else
+			end
+		end
+		for _, slot in ipairs(model) do
+			if not slot.class then
 				for _, item in ipairs(items) do
-					if (not itemClasses[item] or free[itemClasses[item]] > 0) and assign(slot, item) then
-						if itemClasses[item] then
-							free[itemClasses[item]] = free[itemClasses[item]] - 1
-						end
+					if assign(slot, item) then
 						break
 					end
 				end
@@ -410,7 +396,7 @@ end
 
 function ContainerClass(container)
 	if container ~= 0 and container ~= BANK_CONTAINER then
-		local name = GetBagName(container)
+		local name = C_Container.GetBagName(container)
 		if name then
 			for class, info in pairs(CLASSES) do
 				for _, itemID in pairs(info.containers) do
@@ -424,7 +410,7 @@ function ContainerClass(container)
 end
 
 function Item(container, position)
-	local link = GetContainerItemLink(container, position)
+	local link = C_Container.GetContainerItemLink(container, position)
 	if link then
         local _, _, itemID, enchantID, suffixID, uniqueID = strfind(link, 'item:(%d+):(%d*):::::(%d*):(%d*)')
 		itemID = tonumber(itemID)
@@ -507,10 +493,10 @@ function Item(container, position)
 		itemStacks[key] = stack
 		itemSortKeys[key] = sortKey
 
+		itemClasses[key] = {}
 		for class, info in pairs(CLASSES) do
 			if info.items[itemID] then
-				itemClasses[key] = class
-				break
+				itemClasses[key][class] = true
 			end
 		end
 
