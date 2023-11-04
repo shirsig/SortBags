@@ -8,8 +8,8 @@ __IMPORTANT: If you want buttons then get this too: https://github.com/shirsig/C
 /run SortBankBags() -- Sort bank
 /run SetSortBagsRightToLeft(Boolean) -- Set sort direction
 /run GetSortBagsRightToLeft(): Boolean -- Get sort direction
-/run SetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, Boolean) -- Set bag ignore status - bagId in (1, 2, 3, 4), does not work for main bag
-/run GetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP): Boolean -- Get bag ignore status
-/run SetBankBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, Boolean) -- Set bag ignore status - bagId in (1, 2, 3, 4, 5, 6), does not work for main bank bag
-/run GetBankBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP): Boolean -- Get bag ignore status
+/run C_Container.SetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, Boolean) -- Set bag ignore status - 
+--bagId in (1, 2, 3, 4) for character bags, does not work for main bag.
+--bagId in (5, 6, 7, 8, 9, 10, 11) for bank bags, does not work for main bank bag.
+/run C_Container.GetBagSlotFlag(bagId, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP): Boolean -- Get bag ignore status
 ```
